@@ -1,0 +1,16 @@
+# Load Testing
+locust==2.24.1
+
+# Robot Framework
+robotframework==7.0
+robotframework-seleniumlibrary==6.3.0
+robotframework-appiumlibrary==2.1.0
+
+# Test data generation
+faker==24.3.0
+
+# HTTP client
+requests==2.31.0
+
+# Environment variable management
+python-dotenv==1.0.1
