@@ -14,7 +14,7 @@ def post(client, url: str, payload: dict, token: str = "", name: str = "") -> di
 
     Args:
         client:  Locust HttpUser client
-        url:     Endpoint path (e.g. '/api/offers')
+        url:     Endpoint path (e.g. '/api/of/offers')
         payload: Request body as dict (serialized to JSON)
         token:   Optional Bearer access token
         name:    Locust stats label (defaults to url)

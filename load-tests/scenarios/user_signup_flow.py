@@ -1,25 +1,36 @@
 """
 scenarios/user_signup_flow.py
 
-High-level scenario: user signup followed by login.
+High-level authentication flow for load tests (login-only).
 
-This scenario is used in locustfile.py to simulate a new user registering
-and immediately authenticating to obtain an access token.
+Signup is intentionally NOT tested here.
+All virtual users authenticate using credentials from environment variables.
 """
 
-from endpoints.auth_api import signup, login
-from utils.data_factory import make_user
+import os
+
+from dotenv import load_dotenv
+
+from endpoints.auth_api import login
+
+load_dotenv()
 
 
-def signup_and_login(client) -> str:
+def _get_test_credentials() -> tuple[str, str]:
+    """Return test credentials from environment variables or .env file."""
+    email = os.getenv("TEST_USER_EMAIL", "").strip()
+    password = os.getenv("TEST_USER_PASSWORD", "").strip()
+    return email, password
+
+
+def signup_and_login(client, use_env_credentials: bool = True) -> str:
     """
-    Simulate a new user signing up and logging in.
+    Authenticate a user with environment credentials and return an access token.
 
     Steps:
-        1. Generate random user data.
-        2. POST /api/signup
-        3. POST /api/login
-        4. Return the access token string (empty string if login fails).
+        1. Read `TEST_USER_EMAIL` and `TEST_USER_PASSWORD`.
+        2. POST /api/us/auth/login.
+        3. Return the access token string (empty string on failure).
 
     Args:
         client: Locust HttpUser client
@@ -27,17 +38,16 @@ def signup_and_login(client) -> str:
     Returns:
         Access token string, or empty string on failure.
     """
-    user = make_user()
+    if not use_env_credentials:
+        return ""
 
-    signup(client, {
-        "name": user["name"],
-        "email": user["email"],
-        "password": user["password"],
-    })
+    email, password = _get_test_credentials()
+    if not email or not password:
+        return ""
 
     response = login(client, {
-        "email": user["email"],
-        "password": user["password"],
+        "email": email,
+        "password": password,
     })
 
-    return response.get("access_token", "")
+    return response.get("accessToken", "") or response.get("access_token", "")

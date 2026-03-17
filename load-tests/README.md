@@ -15,6 +15,7 @@ load-tests/
 │   └── restaurant_api.py
 ├── scenarios/             # High-level user flows composed from endpoints
 │   ├── user_signup_flow.py
+│   ├── user_profile_flow.py
 │   └── create_offer_flow.py
 └── utils/
     ├── http_client.py     # Shared HTTP client with response validation
@@ -28,7 +29,7 @@ load-tests/
 ### With web UI
 
 ```bash
-locust -f load-tests/locustfile.py --host=http://localhost:8000
+locust -f load-tests/locustfile.py --host=http://kalynow.mg
 ```
 
 Open [http://localhost:8089](http://localhost:8089) to configure and start the test.
@@ -36,7 +37,7 @@ Open [http://localhost:8089](http://localhost:8089) to configure and start the t
 ### Headless mode
 
 ```bash
-locust -f load-tests/locustfile.py --host=http://localhost:8000 \
+locust -f load-tests/locustfile.py --host=http://kalynow.mg \
   --headless -u 10 -r 2 --run-time 60s
 ```
 
@@ -55,3 +56,10 @@ locust -f load-tests/locustfile.py --host=http://localhost:8000 \
 - All endpoint helpers receive a Locust `client` object and return the parsed JSON response.
 - Use `data_factory.py` to generate randomized test data per request.
 - Avoid hardcoding credentials or URLs — use environment variables via `.env`.
+- User-service endpoints must use the `/api/us` prefix (Traefik architecture).
+- Signup is not part of load tests. Authentication uses only env credentials via `/api/us/auth/login`, then profile via `/api/us/users/me`.
+- Offer-service endpoints must use the `/api/of` prefix.
+- Current offer/restaurant flow covers:
+  - Restaurant: `POST /api/of/restaurants`, `GET /api/of/restaurants`, `GET /api/of/restaurants/:id`, `PUT /api/of/restaurants/:id`
+  - Offer: `POST /api/of/offers`, `GET /api/of/offers`, `GET /api/of/offers/:id`, `PUT /api/of/offers/:id`
+- Seeing `Aggregated 0 0` at startup is normal before users are fully spawned.

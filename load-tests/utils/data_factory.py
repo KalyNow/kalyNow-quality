@@ -49,11 +49,15 @@ def make_offer(restaurant_id: str) -> dict:
         restaurant_id: ID of the restaurant this offer belongs to.
 
     Returns:
-        dict with keys: title, description, discount_percent, restaurant_id
+        dict with keys: restaurantId, title, description, price, discountedPrice
     """
+    price = round(fake.pyfloat(left_digits=2, right_digits=2, positive=True, min_value=5, max_value=80), 2)
+    discounted = round(price * fake.random_int(min=60, max=95) / 100, 2)
+
     return {
+        "restaurantId": restaurant_id,
         "title": fake.catch_phrase(),
         "description": fake.sentence(),
-        "discount_percent": fake.random_int(min=5, max=50),
-        "restaurant_id": restaurant_id,
+        "price": price,
+        "discountedPrice": discounted,
     }

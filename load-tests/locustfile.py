@@ -13,6 +13,7 @@ Usage:
 from locust import HttpUser, between, task
 
 from scenarios.user_signup_flow import signup_and_login
+from scenarios.user_profile_flow import fetch_my_profile
 from scenarios.create_offer_flow import create_restaurant_and_offer
 
 
@@ -27,18 +28,29 @@ class KalyNowUser(HttpUser):
     wait_time = between(1, 3)
 
     def on_start(self):
-        """Called once when a simulated user starts. Perform login here."""
-        self.auth_token = signup_and_login(self.client)
+        """Called once when a simulated user starts. Login with env credentials."""
+        self.auth_token = signup_and_login(self.client, use_env_credentials=True)
 
     @task(3)
     def browse_and_create_offer(self):
         """
-        High-frequency task: create a restaurant and an offer.
+        High-frequency task: restaurant/offer create + get + update flow.
         Weight 3 means this runs 3x more often than weight-1 tasks.
         """
+        if not self.auth_token:
+            self.auth_token = signup_and_login(self.client, use_env_credentials=True)
+        if not self.auth_token:
+            return
+
         create_restaurant_and_offer(self.client, self.auth_token)
 
-    @task(1)
-    def signup_flow(self):
-        """Low-frequency task: simulate a new user signing up."""
-        signup_and_login(self.client)
+    @task(2)
+    def get_my_profile(self):
+        """User-service task: fetch current user profile via /api/us/users/me."""
+        if not self.auth_token:
+            self.auth_token = signup_and_login(self.client, use_env_credentials=True)
+        if not self.auth_token:
+            return
+
+        fetch_my_profile(self.client, self.auth_token)
+
